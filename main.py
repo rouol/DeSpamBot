@@ -9,14 +9,17 @@ from telegram.utils.helpers import DEFAULT_20
 
 # from config import TOKEN
 TOKEN = "5536751586:AAE4OIUR2XtT-dqCUUrz3zbpR7HwlS9AzBo"
+# make sound
+
 
 bot = Bot(token=TOKEN)
 dispatcher: Dispatcher = None
 
 # high-end database units
-TIME_IN_CLOWN_JAIL = 10
-messages_to_delete = set()
-clowns = dict()
+DEFAULT_TIME_IN_CLOWN_JAIL = 10
+chat_data = dict()
+# messages_to_delete = set()
+# clowns = dict()
 
 # command handlers
 def start_command(update: Update, context: CallbackContext) -> None:
@@ -61,47 +64,56 @@ def set_time(update: Update, context: CallbackContext) -> None:
     """Set time in seconds for clowns in jail."""
     try:
         TIME_IN_CLOWN_JAIL = int(context.args[0])
+        chat_data[update.effective_chat.id]['TIME_IN_CLOWN_JAIL'] = TIME_IN_CLOWN_JAIL
         update.message.reply_text(f'Сообщения будут удаляться в течении {TIME_IN_CLOWN_JAIL} секунд')
     except:
         update.message.reply_text('Неверный ввод')
 
 def despam_command(update: Update, context: CallbackContext) -> None:
     """Despams the chat."""
-    global messages_to_delete, clowns
+    global chat_data
     try:
-        for message_id in messages_to_delete:
-            context.bot.delete_message(chat_id=update.effective_chat.id, message_id=message_id)
-        messages_to_delete = set()
-        clowns = dict()
+        # check if there is data for this chat
+        if update.effective_chat.id in chat_data:
+            for message_id in chat_data[update.effective_chat.id]['messages_to_delete']:
+                context.bot.delete_message(chat_id=update.effective_chat.id, message_id=message_id)
+            chat_data[update.effective_chat.id]['messages_to_delete'] = set()
+            chat_data[update.effective_chat.id]['clowns'] = dict()
     except:
         bot.send_message(update.effective_chat.id, text='Мне нужны права администратора, чтобы удалять сообщения')
 
 def reply(update: Update, context: CallbackContext) -> None:
     """Reply to user message."""
+    # check if there is data for this chat
+    if update.effective_chat.id not in chat_data:
+        chat_data[update.effective_chat.id] = dict()
+        chat_data[update.effective_chat.id]['TIME_IN_CLOWN_JAIL'] = DEFAULT_TIME_IN_CLOWN_JAIL
+        chat_data[update.effective_chat.id]['messages_to_delete'] = set()
+        chat_data[update.effective_chat.id]['clowns'] = dict()
     # check if message from user via bot
     if update.message.via_bot:
         # @HowYourBot?
         if update.message.via_bot.id == 1341194997:
             # add message to set of messages to delete
-            messages_to_delete.add(update.message.message_id)
+            chat_data[update.effective_chat.id]['messages_to_delete'].add(update.message.message_id)
             # put user in clowns dict
-            clowns[update.message.from_user.id] = datetime.datetime.now()
+            chat_data[update.effective_chat.id]['clowns'][update.message.from_user.id] = datetime.datetime.now()
     # check if reply to message
     elif update.message.reply_to_message:
         # check if reply to message from user via @HowYourBot
-        if update.message.reply_to_message.message_id in messages_to_delete:
-            messages_to_delete.add(update.message.message_id)
+        if update.message.reply_to_message.message_id in chat_data[update.effective_chat.id]['messages_to_delete']:
+            chat_data[update.effective_chat.id]['messages_to_delete'].add(update.message.message_id)
             # put user in clowns dict
-            clowns[update.message.from_user.id] = datetime.datetime.now()
+            chat_data[update.effective_chat.id]['clowns'][update.message.from_user.id] = datetime.datetime.now()
     # check if this message was sent by a clown
-    elif update.message.from_user.id in clowns:
+    elif update.message.from_user.id in chat_data[update.effective_chat.id]['clowns']:
         # check if this message was sent in the last TIME_IN_CLOWN_JAIL seconds
-        if datetime.datetime.now() - clowns[update.message.from_user.id] < datetime.timedelta(seconds=TIME_IN_CLOWN_JAIL):
+        if datetime.datetime.now() - chat_data[update.effective_chat.id]['clowns'][update.message.from_user.id] < datetime.timedelta(seconds=chat_data[update.effective_chat.id]['TIME_IN_CLOWN_JAIL']):
             # add message to set of messages to delete
-            messages_to_delete.add(update.message.message_id)
+            chat_data[update.effective_chat.id]['messages_to_delete'].add(update.message.message_id)
         # else remove user from clowns dict
         else:
-            del clowns[update.message.from_user.id]
+            del chat_data[update.effective_chat.id]['clowns'][update.message.from_user.id]
 
 # main loop
 def main() -> None:
