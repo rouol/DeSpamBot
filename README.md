@@ -1,6 +1,6 @@
 # DeSpamBot
 
-A small telegram bot that tracks messages related to the @HowYourBot bot and deletes them all at one command.
+A small telegram bot that tracks messages related to the @HowYourBot bot and deletes them all at one command or/and automatically.
 
 If the project is still running, it is available at @DeSpamHYBbot
 
