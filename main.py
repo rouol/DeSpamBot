@@ -49,7 +49,7 @@ def start_command(update: Update, context: CallbackContext) -> None:
         case 'group' | 'supergroup':
             update.message.reply_text(
 """
-Хей, это DeSpamBot бот
+Хэй, это DeSpamBot бот
 \t— Надоел спам от @HowYourBot?
 Я умею чистить всё что с ним связано по одной команде /despam
 
@@ -59,7 +59,7 @@ def start_command(update: Update, context: CallbackContext) -> None:
         case 'private':
             update.message.reply_text(
 """
-Хей, это DeSpamBot бот
+Хэй, это DeSpamBot бот
 \t— Надоел спам от @HowYourBot?
 Добавь меня в чат и я смогу чистить всё что с ним связано по одной команде /despam
 
