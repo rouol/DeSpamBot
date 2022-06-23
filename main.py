@@ -72,13 +72,13 @@ def start_command(update: Update, context: CallbackContext) -> None:
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text(
-"""
+f"""
 DeSpamBot
 
 Доступные команды:
 \t /start - приветствие
 \t /despam - почистить чат
-\t /set_time X - установить время отслеживания сообщений в секундах, по умолчанию 10
+\t /set_time X - установить время отслеживания сообщений в секундах, текущее значение: {DEFAULT_TIME_IN_CLOWN_JAIL if update.effective_chat.id not in chat_data else chat_data[update.effective_chat.id]['TIME_IN_CLOWN_JAIL']}
 \t /help - справка""")
 
 def set_time(update: Update, context: CallbackContext) -> None:
